@@ -4,4 +4,6 @@
 
 ## Tech Stack
 - Google Maps API
+    - user-editable-shapes
+    - drag-shape
 - https://developer.nrel.gov/docs/solar/pvwatts-v5/ API

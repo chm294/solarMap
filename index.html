@@ -9,7 +9,7 @@
 				<script>
 					function initMap() {
 						var scranton = {lat: 41.418793, lng: -75.680906};
-						var map = new google.maps.Map(document.getElementById('map'), {
+						map = new google.maps.Map(document.getElementById('map'), {
 							zoom: 15,
 							center: scranton,
 						});
@@ -26,6 +26,9 @@
 						// construct the polygon
 						var polygon = new google.maps.Polygon({
 							paths: polygonCoords,
+							editable: true,
+							draggable: true,
+							geodesic: true,
 							strokeColor: '#FF0000',
 							strokeOpacity: 0.8,
 							strokeWeight: 2,
@@ -35,14 +38,37 @@
 
 						polygon.setMap(map);
 
+						// add a listener 
+						polygon.addListener('click', showInfo);
+						infoWindow = new google.maps.InfoWindow;
+
 						// probably won't need markers
 						/*var marker = new google.maps.Marker({
 							position: scranton,
 							map: map
-						});*/
-
-
+						});*/						
 					}
+					
+					function showInfo(event) {
+						let vertices = this.getPath(); // returns array of the coordinate objs
+						let contentString = '<b> Your selected area is </b><br></br>' 
+
+						let areaPath = [];
+
+						for(let i = 0; i < vertices.getLength(); i++) {
+							areaPath.push(vertices.getAt(i))
+						}
+
+						let area = google.maps.geometry.spherical.computeArea(areaPath)
+						
+						contentString += Math.round(area*100)/100 + ' sq meters'
+
+						infoWindow.setContent(contentString);
+						infoWindow.setPosition(event.latLng);
+
+						infoWindow.open(map);
+					}
+		
 				</script>
 				<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAP6LR9lr37mI63AuD7muIJQSTFw2Xz4LU&callback=initMap">
 				</script>
