@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
-    <head>
-				<link rel="stylesheet" href="./static/style.css" /> 
-			</head>
-			<body>
-				<h1 class="header"> Solar Map </h1>
-				<form id="place">
-					<input type="text" class="search" name="address" placeholder="Search your address " />
-				</form>
-				<p id="search-result">Start by typing in your address or city</p>
-				<div id="map"></div>
-				<script src="./search.js"></script>
-				<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAP6LR9lr37mI63AuD7muIJQSTFw2Xz4LU&libraries=places&callback=initMap"></script>
-    </body>
+	<head>
+		<link rel="stylesheet" href="./static/style.css"/> 
+	</head>
+	<body>
+		<h1 class="header"> Solar Map </h1>
+		<form id="place">
+			<input type="text" class="search" name="address" placeholder="Search your address " />
+		</form>
+		<p id="search-result"> Start by typing in your address, city, or state to get started </p>
+		<div id="map"></div>
+		<script src="./search.js"></script>
+		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAP6LR9lr37mI63AuD7muIJQSTFw2Xz4LU&libraries=places&callback=initMap"></script>
+	</body>
 </html>

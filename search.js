@@ -4,15 +4,15 @@
         e.preventDefault();
         // get lat long of query address
         var address = {query : document.getElementById("place").elements[0].value};
-        window.coordinates = []
+        window.coordinates = [];
         service = new google.maps.places.PlacesService(map);
         service.textSearch(address, function(response, status) {
             if(status === "ZERO_RESULTS") {
                 let searchResult = document.getElementById("search-result");
-                searchResult.innerHTML = "No results found. Double check the address entered is a valid US address"
+                searchResult.innerHTML = "Search not found. Please enter a valid United States address.";
             } else {
-                coordinates[0] = response[0].geometry.location.lat()
-                coordinates[1] = response[0].geometry.location.lng()
+                coordinates[0] = response[0].geometry.location.lat();
+                coordinates[1] = response[0].geometry.location.lng();
                 fetchNrel();
             }
         })
@@ -22,28 +22,29 @@
                 return response.json();
             })
             .then(function(nrelData) {
-                initMap(coordinates, nrelData)
-
-                data = nrelData;
                 
-                if(nrelData.warnings.length >= 0 || nrelData.errors.length >= 0) {
-                    if(nrelData.warnings[0].slice(0,42) === "This location appears to be outside the US") {
-                        let warning = document.getElementById("search-result");
-                        warning.innerHTML = nrelData.warnings[0].slice(0,42) + '. Try entering a United States address'
+                data = nrelData;
+                initMap(coordinates, data);
+                
+                let instructionText = document.getElementById("search-result");
+                instructionText.innerHTML = "Location found. Drag the polygon to capture desired area. Click area for more details.";
+
+                if(data.warnings.length > 0) {
+                    if(data.warnings[0].slice(0,42) === "This location appears to be outside the US") {
+                        instructionText.innerHTML = `${data.warnings[0].slice(0,42)}. Try entering a United States address`;
                     } 
-                    if(nrelData.errors.length >= 0) {
-                        if(nrelData.errors[0].slice(0, 34) === "No climate data found with dataset") {
-                            let error = document.getElementById("search-result");
-                            error.innerHTML = "No climate data found with dataset. Try entering a United States address"
-                        }
-                    }
+                    console.log(data.warnings);
+                }
+                if(data.errors.length > 0) {
+                    console.log(data.errors);
+                    instructionText.innerHTML = `No climate data available for this location. Make sure to search within US`;
                 }
             })
             .catch(function(error){
-                console.log(error.message)
+                console.log(error.message);
             })
         }
-    }
+    };
 
     function initMap(coordinates, nrelData) {
         var defaultLoc = {lat: 41.418793, lng: -75.680906};
@@ -53,13 +54,10 @@
             zoom: 15,
             center: defaultLoc,
         });
-
-        console.log(nrelData.station_info.city, nrelData.station_info.state)
-        console.log(nrelData.outputs.solrad_monthly)
         
-        // define LatLng coordinates for polygon's path
-        var polygonCoords ;
-
+        
+        // create polygon
+        var polygonCoords;
         //new polygon coords if new coordinates is entered. otherwise, default to Scranton, Pennsylvania
         coordinates ? 
         polygonCoords = [
@@ -72,8 +70,7 @@
             {lat: 41.418549, lng: -75.680440},
             {lat: 41.416466, lng: -75.682210},
             {lat: 41.416690, lng: -75.682769},
-            // {lat: 41.418793, lng: -75.680906} // autocompleted 
-        ]
+        ];
 
         // construct the polygon
         var polygon = new google.maps.Polygon({
@@ -81,53 +78,76 @@
             editable: true,
             draggable: true,
             geodesic: true,
-            strokeColor: '#FF0000',
+            strokeColor: '#FD6E38',
             strokeOpacity: 0.8,
             strokeWeight: 2,
-            fillColor: 'FF0000',
+            fillColor: '#FDA938',
             fillOpacity: 0.35
         });
 
         polygon.setMap(map);
-
-        // add a listener 
-        console.log('this', this);
         polygon.addListener('click', showInfo);
-        infoWindow = new google.maps.InfoWindow;
-
-        // probably won't need markers
-        /*var marker = new google.maps.Marker({
-            position: scranton,
-            map: map
-        });*/						
-    }
+        infoWindow = new google.maps.InfoWindow;				
+    };
     
     function showInfo(event) {
         let vertices = this.getPath(); // returns array of the coordinate objs
-        let contentString = '<b> Your selected area is </b><br></br>' 
-
         let areaPath = [];
-
+        let area;
         for(let i = 0; i < vertices.getLength(); i++) {
-            areaPath.push(vertices.getAt(i))
+            areaPath.push(vertices.getAt(i));
         }
+        area = google.maps.geometry.spherical.computeArea(areaPath);
 
-        let area = google.maps.geometry.spherical.computeArea(areaPath)
+        console.log(data.outputs);
+
+        const date = new Date();
+        const months = [];
+        months[0] = ["January", 31];
+        months[1] = ["February", 28];
+        months[2] = ["March", 31];
+        months[3] = ["April", 30];
+        months[4] = ["May", 31];
+        months[5] = ["June",30];
+        months[6] = ["July", 31];
+        months[7] = ["August", 31];
+        months[8] = ["September", 30];
+        months[9] = ["October", 31];
+        months[10] = ["November", 30];
+        months[11] = ["December", 31];
+
+        let currentMonthNum = date.getMonth();
+        let currentMonthString = months[currentMonthNum][0];
+        let monthLength = months[currentMonthNum][1];
+
+        //rounded to nearest whole number
+        // Monthly solar radiation values in (kWh/m2/day) * selected Area * number of days in that month
+        const energyForCurrentMonth = Math.round(data.outputs.solrad_monthly[currentMonthNum]*area*monthLength);
+        // Annual solar radiation value in (kWh/m2/day) * selected Area * 365 days 
+        const energyAnnual = Math.round(data.outputs.solrad_annual*area*365);
+
+
+
+        let contentString = `<b> Your selected area is </b><br></br> ${Math.round(area*100)/100} sq meters<br></br>`;
         
-        contentString += Math.round(area*100)/100 + ' sq meters<br></br>'
-        contentString = data ? `${contentString}Information from climate station located in ${data.station_info.city}, ${data.station_info.state}` : null;
+        if(data) {
+            contentString = `${contentString}
+            Monthly solar radiation for selected area during ${currentMonthString}: ${energyForCurrentMonth} kWh <br>
+            Annual solar radiation for selected area: ${energyAnnual} kWh<br>
+            Information from closest climate station located in ${data.station_info.city}, ${data.station_info.state}
+            `;
+        };
 
         infoWindow.setContent(contentString);
         infoWindow.setPosition(event.latLng);
-
         infoWindow.open(map);
-    }
+    };
 
     function init() {
         const placeForm = document.getElementById('place');
         placeForm.addEventListener('submit', queryAddress);
         window.initMap = initMap;
-    }
+    };
 
     init();
 })();
