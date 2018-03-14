@@ -91,15 +91,20 @@
     };
     
     function showInfo(event) {
-        let vertices = this.getPath(); // returns array of the coordinate objs
+        let vertices = this.getPath(); // returns array of objects of the polygon's coordinates
         let areaPath = [];
-        let area;
+        
         for(let i = 0; i < vertices.getLength(); i++) {
             areaPath.push(vertices.getAt(i));
         }
-        area = google.maps.geometry.spherical.computeArea(areaPath);
+        
+        let area = google.maps.geometry.spherical.computeArea(areaPath); // get the area of the drawn polygon
 
-        console.log(data.outputs);
+        // in case users select an area larger than a standard city, notify that accuracy may be off
+				let instructionText = document.getElementById("search-result");
+        if(area > 10000000) {
+            instructionText.innerHTML = `please select a smaller area for better accuracy`;
+        } 
 
         const date = new Date();
         const months = [];
@@ -120,16 +125,15 @@
         let currentMonthString = months[currentMonthNum][0];
         let monthLength = months[currentMonthNum][1];
 
-        //rounded to nearest whole number
-        // Monthly solar radiation values in (kWh/m2/day) * selected Area * number of days in that month
+        // Monthly solar radiation values in (kWh/m2/day) * selected Area in m^2 * number of days in that month
         const energyForCurrentMonth = Math.round(data.outputs.solrad_monthly[currentMonthNum]*area*monthLength);
+
         // Annual solar radiation value in (kWh/m2/day) * selected Area * 365 days 
         const energyAnnual = Math.round(data.outputs.solrad_annual*area*365);
 
-
-
         let contentString = `<b> Your selected area is </b><br></br> ${Math.round(area*100)/100} sq meters<br></br>`;
         
+        // if received data fetched from Nrel api, add the additional information to contentString
         if(data) {
             contentString = `${contentString}
             Monthly solar radiation for selected area during ${currentMonthString}: ${energyForCurrentMonth} kWh <br>
@@ -144,8 +148,11 @@
     };
 
     function init() {
+        // grab and add event listener to address search box
         const placeForm = document.getElementById('place');
         placeForm.addEventListener('submit', queryAddress);
+
+        //initialize map
         window.initMap = initMap;
     };
 
