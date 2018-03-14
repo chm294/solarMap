@@ -1,76 +1,16 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="./static/style.css" /> 
-    </head>
-    <body>
+				<link rel="stylesheet" href="./static/style.css" /> 
+			</head>
+			<body>
 				<h1 class="header"> Solar Map </h1>
+				<form id="place">
+					<input type="text" class="search" name="address" placeholder="Search your address " />
+				</form>
+				<p id="search-result">Start by typing in your address or city</p>
 				<div id="map"></div>
-				<script>
-					function initMap() {
-						var scranton = {lat: 41.418793, lng: -75.680906};
-						map = new google.maps.Map(document.getElementById('map'), {
-							zoom: 15,
-							center: scranton,
-						});
-
-						// define LatLng coordinates for polygon's path
-						var polygonCoords = [
-							{lat: 41.418793, lng: -75.680906},
-							{lat: 41.418549, lng: -75.680440},
-							{lat: 41.416466, lng: -75.682210},
-							{lat: 41.416690, lng: -75.682769},
-							// {lat: 41.418793, lng: -75.680906} // autocompleted 
-						];
-
-						// construct the polygon
-						var polygon = new google.maps.Polygon({
-							paths: polygonCoords,
-							editable: true,
-							draggable: true,
-							geodesic: true,
-							strokeColor: '#FF0000',
-							strokeOpacity: 0.8,
-							strokeWeight: 2,
-							fillColor: 'FF0000',
-							fillOpacity: 0.35
-						});
-
-						polygon.setMap(map);
-
-						// add a listener 
-						polygon.addListener('click', showInfo);
-						infoWindow = new google.maps.InfoWindow;
-
-						// probably won't need markers
-						/*var marker = new google.maps.Marker({
-							position: scranton,
-							map: map
-						});*/						
-					}
-					
-					function showInfo(event) {
-						let vertices = this.getPath(); // returns array of the coordinate objs
-						let contentString = '<b> Your selected area is </b><br></br>' 
-
-						let areaPath = [];
-
-						for(let i = 0; i < vertices.getLength(); i++) {
-							areaPath.push(vertices.getAt(i))
-						}
-
-						let area = google.maps.geometry.spherical.computeArea(areaPath)
-						
-						contentString += Math.round(area*100)/100 + ' sq meters'
-
-						infoWindow.setContent(contentString);
-						infoWindow.setPosition(event.latLng);
-
-						infoWindow.open(map);
-					}
-		
-				</script>
-				<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAP6LR9lr37mI63AuD7muIJQSTFw2Xz4LU&callback=initMap">
-				</script>
+				<script src="./search.js"></script>
+				<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAP6LR9lr37mI63AuD7muIJQSTFw2Xz4LU&libraries=places&callback=initMap"></script>
     </body>
 </html>
