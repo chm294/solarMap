@@ -5,7 +5,7 @@
     function queryAddress(e) {
         e.preventDefault();
         // get latitutde and longitude of querried address by querying through Google Places API
-        var address = {query : document.getElementById("place").elements[0].value};
+        const address = {query : document.getElementById("place").elements[0].value};
         service = new google.maps.places.PlacesService(map);
         service.textSearch(address, function(response, status) {
             if(status === "ZERO_RESULTS") {
@@ -19,10 +19,12 @@
                     .catch(console.error);
             };
         });
-        let setNrel = function(nrelData) {
+        const setNrel = function(nrelData) {
+            // reinitialize map with queried address coordinates and fetched nrel data passed in 
             initMap(coordinates, nrelData);
             
-            let instructionText = document.getElementById("search-result");
+            //throw errors and instruction text if location is outside US or unavailable
+            const instructionText = document.getElementById("search-result");
             instructionText.innerHTML = "Location found. Drag the polygon to capture desired area. Click area for more details.";
 
             if(nrelData.warnings.length > 0) {

@@ -2,7 +2,7 @@
     function initMap(coordinates, nrelData) {
 
         // default location the map falls on if passed in given coordinates
-        var defaultLoc = {lat: 41.418793, lng: -75.680906};
+        let defaultLoc = {lat: 41.418793, lng: -75.680906};
         coordinates ? defaultLoc = {lat: coordinates[0], lng: coordinates[1]} : {lat: 41.418793, lng: -75.680906};
 
         window.map = new google.maps.Map(document.getElementById('map'), {
@@ -12,7 +12,7 @@
         
         
         // create polygon
-        var polygonCoords;
+        let polygonCoords;
         //new polygon coords if new coordinates is entered. otherwise, default to no polygon (empty array)
         coordinates ? 
         polygonCoords = [
@@ -23,7 +23,7 @@
         : polygonCoords = [];
 
         // construct the polygon
-        var polygon = new google.maps.Polygon({
+        const polygon = new google.maps.Polygon({
             paths: polygonCoords,
             editable: true,
             draggable: true,
@@ -40,17 +40,17 @@
         infoWindow = new google.maps.InfoWindow;
         
         function showInfo(event) {
-            let vertices = this.getPath(); // calls google maps method to retrieve polygon info
-            let areaPath = []; // array will contain objects of the polygon's coordinates
+            const vertices = this.getPath(); // calls google maps method to retrieve polygon info
+            const areaPath = []; // array will contain objects of the polygon's coordinates
             
             for(let i = 0; i < vertices.getLength(); i++) {
                 areaPath.push(vertices.getAt(i));
             }
             
-            let area = google.maps.geometry.spherical.computeArea(areaPath); // get the area of the drawn polygon
+            const area = google.maps.geometry.spherical.computeArea(areaPath); // get the area of the drawn polygon
     
             // in case users select an area larger than a standard city, notify that accuracy may be off
-            let instructionText = document.getElementById("search-result");
+            const instructionText = document.getElementById("search-result");
             if(area > 10000000) {
                 instructionText.innerHTML = `please select a smaller area for better accuracy`;
             } 
@@ -71,9 +71,9 @@
             months[10] = ["November", 30];
             months[11] = ["December", 31];
     
-            let currentMonthNum = date.getMonth();
-            let currentMonthString = months[currentMonthNum][0];
-            let monthLength = months[currentMonthNum][1];
+            const currentMonthNum = date.getMonth();
+            const currentMonthString = months[currentMonthNum][0];
+            const monthLength = months[currentMonthNum][1];
             
             // if received nrelData fetched from Nrel api, add the additional information to contentString
             if(nrelData) {
@@ -83,7 +83,7 @@
                 // Annual solar radiation value in (kWh/m2/day) * selected Area * 365 days 
                 const energyAnnual = Math.round(nrelData.outputs.solrad_annual*area*365);
     
-                let contentString = `<b> Your selected area is </b><br></br> ${Math.round(area*100)/100} sq meters<br></br>
+                const contentString = `<b> Your selected area is </b><br></br> ${Math.round(area*100)/100} sq meters<br></br>
                 Monthly solar radiation for selected area during ${currentMonthString}: ${energyForCurrentMonth} kWh <br>
                 Annual solar radiation for selected area: ${energyAnnual} kWh<br>
                 Information from closest climate station located in ${nrelData.station_info.city}, ${nrelData.station_info.state}
